@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Référentiel de compétences</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { color: #2c3e50; }
+    input, select, button { margin: 5px; padding: 5px; }
+    .collaborateur { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    form { margin-top: 30px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h2>🔍 Recherche et Filtres</h2>
+  <input type="text" id="search" placeholder="Rechercher un mot-clé..." />
+  <select id="filter-techno">
+    <option value="">-- Filtrer par techno --</option>
+    <option value="Python">Python</option>
+    <option value="Java">Java</option>
+    <option value="Jira">Jira</option>
+    <option value="Confluence">Confluence</option>
+    <option value="JavaScript">JavaScript</option>
+  </select>
+  <select id="filter-niveau">
+    <option value="">-- Filtrer par niveau --</option>
+    <option value="Débutant">Débutant</option>
+    <option value="Intermédiaire">Intermédiaire</option>
+    <option value="Expert">Expert</option>
+  </select>
+
+  <h2>👥 Collaborateurs</h2>
+  <div id="list-collaborateurs"></div>
+
+  <h2>📊 Vue Manager : Matrice</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Collaborateur</th>
+        <th>Python</th>
+        <th>Java</th>
+        <th>Jira</th>
+        <th>Confluence</th>
+        <th>JavaScript</th>
+      </tr>
+    </thead>
+    <tbody id="matrix-body"></tbody>
+  </table>
+
+  <button onclick="toggleStats()">📈 Voir les statistiques globales</button>
+
+  <div id="stats-section" class="hidden">
+    <h2>📊 Statistiques Globales</h2>
+    <pre id="summary"></pre>
+    <canvas id="levelChart" width="400" height="200"></canvas>
+  </div>
+
+  <h2>📝 Mise à jour du profil</h2>
+  <form id="update-form">
+    <label>Nom : <input type="text" name="nom" /></label><br>
+    <label>Technologie : <input type="text" name="technos" /></label><br>
+    <label>Niveau :
+      <select name="niveau">
+        <option value="Débutant">Débutant</option>
+        <option value="Intermédiaire">Intermédiaire</option>
+        <option value="Expert">Expert</option>
+      </select>
+    </label><br>
+    <button type="submit">Envoyer (simulation)</button>
+  </form>
+
+  <script>
+    const collaborateurs = [
+      {
+        nom: "Alice Dupont",
+        technos: [
+          { nom: "Python", niveau: "Expert" },
+          { nom: "Jira", niveau: "Intermédiaire" }
+        ]
+      },
+      {
+        nom: "Mehdi Khelifi",
+        technos: [
+          { nom: "Java", niveau: "Intermédiaire" },
+          { nom: "Confluence", niveau: "Débutant" }
+        ]
+      },
+      {
+        nom: "Sophie Legrand",
+        technos: [
+          { nom: "Python", niveau: "Débutant" },
+          { nom: "JavaScript", niveau: "Intermédiaire" }
+        ]
+      },
+      {
+        nom: "Paul Martin",
+        technos: [
+          { nom: "JavaScript", niveau: "Débutant" },
+          { nom: "Jira", niveau: "Débutant" }
+        ]
+      }
+    ];
+
+    const technosList = ["Python", "Java", "Jira", "Confluence", "JavaScript"];
+    const listDiv = document.getElementById("list-collaborateurs");
+    const matrixBody = document.getElementById("matrix-body");
+
+    function renderList() {
+      const keyword = document.getElementById("search").value.toLowerCase();
+      const technoFilter = document.getElementById("filter-techno").value;
+      const niveauFilter = document.getElementById("filter-niveau").value;
+
+      listDiv.innerHTML = "";
+      matrixBody.innerHTML = "";
+
+      collaborateurs.forEach(collab => {
+        const techList = collab.technos.map(t => `${t.nom} (${t.niveau})`).join(", ");
+        const matchKeyword = collab.nom.toLowerCase().includes(keyword) ||
+          collab.technos.some(t => t.nom.toLowerCase().includes(keyword));
+        const filtered = collab.technos.filter(t =>
+          (!technoFilter || t.nom === technoFilter) &&
+          (!niveauFilter || t.niveau === niveauFilter)
+        );
+
+        if ((keyword === "" || matchKeyword) &&
+            (filtered.length > 0 || (!technoFilter && !niveauFilter))) {
+          const div = document.createElement("div");
+          div.className = "collaborateur";
+          div.innerHTML = `<strong>${collab.nom}</strong><br>Technos : ${techList}`;
+          listDiv.appendChild(div);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>${collab.nom}</strong></td>`;
+          technosList.forEach(tech => {
+            const t = collab.technos.find(x => x.nom === tech);
+            let niveau = t ? t.niveau : "-";
+            let symbol = niveau === "Expert" ? "🟢" : niveau === "Intermédiaire" ? "🟡" : niveau === "Débutant" ? "🔴" : "";
+            tr.innerHTML += `<td>${symbol} ${niveau}</td>`;
+          });
+          matrixBody.appendChild(tr);
+        }
+      });
+    }
+
+    function toggleStats() {
+      const stats = document.getElementById("stats-section");
+      stats.classList.toggle("hidden");
+      if (!stats.classList.contains("hidden")) renderStats();
+    }
+
+    function renderStats() {
+      const total = collaborateurs.length;
+      const techUsage = {};
+      const techLevels = {};
+      const levelScores = { "Débutant": 1, "Intermédiaire": 2, "Expert": 3 };
+
+      collaborateurs.forEach(collab => {
+        collab.technos.forEach(t => {
+          if (!techUsage[t.nom]) techUsage[t.nom] = [];
+          techUsage[t.nom].push({ nom: collab.nom, niveau: t.niveau });
+
+          if (!techLevels[t.nom]) techLevels[t.nom] = { Débutant: 0, Intermédiaire: 0, Expert: 0 };
+          techLevels[t.nom][t.niveau]++;
+        });
+      });
+
+      const summaryEl = document.getElementById("summary");
+      let summaryText = `👥 Collaborateurs : ${total}\n`;
+
+      const topTechs = Object.entries(techUsage)
+        .sort((a, b) => b[1].length - a[1].length)
+        .slice(0, 3)
+        .map(([tech, users]) => `${tech} (${users.length})`)
+        .join(", ");
+      summaryText += `🔥 Top 3 technos : ${topTechs}\n\n`;
+
+      const risques = Object.entries(techLevels)
+        .filter(([tech, lvls]) => lvls.Expert === 1)
+        .map(([tech]) => `⚠️ ${tech}`);
+      if (risques.length) summaryText += `🚨 Technos critiques (1 seul expert) : ${risques.join(", ")}\n`;
+
+      const besoinsFormation = Object.entries(techLevels)
+        .filter(([_, lvls]) => (lvls.Débutant >= 2 && lvls.Expert === 0))
+        .map(([tech]) => {
+          const users = techUsage[tech]
+            .filter(u => u.niveau === "Débutant")
+            .map(u => `${u.nom} (${tech})`)
+            .join(", ");
+          return `📘 ${tech} → ${users}`;
+        });
+      if (besoinsFormation.length) summaryText += `📚 Formations suggérées :\n${besoinsFormation.join("\n")}\n`;
+
+      const manques = Object.entries(techLevels)
+        .filter(([tech, lvls]) => lvls.Expert === 0 && (lvls.Débutant + lvls.Intermédiaire) >= 2)
+        .map(([tech, lvls]) => `➕ ${tech} (Débutants: ${lvls.Débutant}, Intermédiaires: ${lvls.Intermédiaire}, Experts: ${lvls.Expert})`);
+      if (manques.length) summaryText += `🧑‍💼 Besoins de recrutement :\n${manques.join("\n")}\n`;
+
+      summaryEl.innerText = summaryText;
+
+      const techAverageLevels = {};
+      Object.entries(techUsage).forEach(([tech, users]) => {
+        const scores = users.map(u => levelScores[u.niveau]);
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        techAverageLevels[tech] = avg.toFixed(2);
+      });
+
+      const ctx = document.getElementById('levelChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(techAverageLevels),
+          datasets: [{
+            label: 'Niveau moyen (1=Débutant, 3=Expert)',
+            data: Object.values(techAverageLevels),
+            backgroundColor: '#3498db'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 3,
+              ticks: {
+                callback: function(value) {
+                  return value === 1 ? "Débutant" : value === 2 ? "Intermédiaire" : value === 3 ? "Expert" : value;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById("search").addEventListener("input", renderList);
+    document.getElementById("filter-techno").addEventListener("change", renderList);
+    document.getElementById("filter-niveau").addEventListener("change", renderList);
+    document.getElementById("update-form").addEventListener("submit", e => {
+      e.preventDefault();
+      alert("Mise à jour soumise (simulation)");
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
