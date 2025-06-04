@@ -1,234 +1,994 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Référentiel de compétences</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { color: #2c3e50; }
-    input, select, button { margin: 5px; padding: 5px; }
-    .collaborateur { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    form { margin-top: 30px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-    .hidden { display: none; }
-  </style>
+<meta charset="UTF-8" />
+<title>Référentiel de compétences</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .header p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+  }
+
+  .section {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title i {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+  }
+
+  /* Filters */
+  .filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .input-group {
+    position: relative;
+  }
+
+  .input-group i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    z-index: 2;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    padding-left: 2.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: var(--surface-color);
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+  }
+
+  /* Cards */
+  .collaborateurs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .collaborateur-card {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .collaborateur-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+  }
+
+  .collaborateur-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  }
+
+  .collaborateur-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .collaborateur-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .collaborateur-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .competences-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .competence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .competence-badge.expert {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .competence-badge.intermédiaire {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .competence-badge.débutant {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .level-icon {
+    font-size: 0.75rem;
+  }
+
+  /* Matrix Table */
+  .matrix-container {
+    overflow-x: auto;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-color);
+  }
+
+  th {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background: rgba(37, 99, 235, 0.02);
+  }
+
+  .matrix-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+
+  .matrix-cell .level-icon {
+    font-size: 1rem;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--secondary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+  }
+
+  .btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: var(--text-secondary);
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Chart Tabs */
+  .chart-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .tab-btn:hover {
+    color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+  }
+
+  .tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+  }
+
+  .chart-container {
+    display: none;
+  }
+
+  .chart-container.active {
+    display: block;
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .individual-profile {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.5rem;
+  }
+
+  .profile-info h3 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .profile-info p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-secondary);
+  }
+
+  /* Amélioration des suggestions */
+  .suggestions-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .suggestion-category {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border-left: 4px solid var(--warning-color);
+  }
+
+  .suggestion-category.critical {
+    border-left-color: var(--danger-color);
+  }
+
+  .suggestion-category.opportunity {
+    border-left-color: var(--success-color);
+  }
+
+  .suggestion-category.recruitment {
+    border-left-color: var(--info-color);
+  }
+
+  .suggestion-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .suggestion-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+  }
+
+  .suggestion-tech {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  .suggestion-details {
+    word-break: break-word;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .priority-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+  }
+
+  .priority-high {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+  }
+
+  .priority-medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+  }
+
+  .priority-low {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info-color);
+  }
+
+  /* Suggestions dropdown */
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+  }
+
+  .suggestions-dropdown.show {
+    display: block;
+  }
+
+  .suggestion-item-dropdown {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .suggestion-item-dropdown:hover {
+    background: var(--background-color);
+  }
+
+  .suggestion-item-dropdown.highlight {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+  }
+
+  .suggestion-new {
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+
+    .filters {
+      grid-template-columns: 1fr;
+    }
+
+    .collaborateurs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .suggestions-section {
+      grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+    }
+  }
+
+  .btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: auto;
+    transition: all 0.2s ease;
+  }
+
+  .btn-icon:hover {
+    color: var(--danger-color);
+    transform: scale(1.1);
+  }
+
+  .delete-btn {
+    font-size: 0.9rem;
+  }
+
+  .existing-skill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.skill-level-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.skill-level-badge.débutant {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+.skill-level-badge.intermédiaire {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+}
+
+.skill-level-badge.expert {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+</style>
 </head>
 <body>
-
-  <h2>🔍 Recherche et Filtres</h2>
-  <input type="text" id="search" placeholder="Rechercher un mot-clé..." />
-  <select id="filter-techno">
-    <option value="">-- Filtrer par techno --</option>
-    <option value="Python">Python</option>
-    <option value="Java">Java</option>
-    <option value="Jira">Jira</option>
-    <option value="Confluence">Confluence</option>
-    <option value="JavaScript">JavaScript</option>
-  </select>
-  <select id="filter-niveau">
-    <option value="">-- Filtrer par niveau --</option>
-    <option value="Débutant">Débutant</option>
-    <option value="Intermédiaire">Intermédiaire</option>
-    <option value="Expert">Expert</option>
-  </select>
-
-  <h2>👥 Collaborateurs</h2>
-  <div id="list-collaborateurs"></div>
-
-  <h2>📊 Vue Manager : Matrice</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Collaborateur</th>
-        <th>Python</th>
-        <th>Java</th>
-        <th>Jira</th>
-        <th>Confluence</th>
-        <th>JavaScript</th>
-      </tr>
-    </thead>
-    <tbody id="matrix-body"></tbody>
-  </table>
-
-  <button onclick="toggleStats()">📈 Voir les statistiques globales</button>
-
-  <div id="stats-section" class="hidden">
-    <h2>📊 Statistiques Globales</h2>
-    <pre id="summary"></pre>
-    <canvas id="levelChart" width="400" height="200"></canvas>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-users-cog"></i> Référentiel de Compétences</h1>
+      <p>Gérez et suivez les compétences de votre équipe</p>
+    </div>
+  
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-search"></i>
+        Recherche et Filtres
+      </h2>
+      <div class="filters">
+        <div class="input-group">
+          <i class="fas fa-search"></i>
+          <input type="text" id="search" placeholder="Rechercher un collaborateur ou une compétence..." />
+        </div>
+        <div class="input-group">
+          <i class="fas fa-code"></i>
+          <select id="filter-techno">
+            <option value="">Toutes les technologies</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Jira">Jira</option>
+            <option value="Confluence">Confluence</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="Angular">Angular</option>
+            <option value="React">React</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-layer-group"></i>
+          <select id="filter-niveau">
+            <option value="">Tous les niveaux</option>
+            <option value="Débutant">Débutant</option>
+            <option value="Intermédiaire">Intermédiaire</option>
+            <option value="Expert">Expert</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-users"></i>
+        Collaborateurs
+      </h2>
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        Chargement des données...
+      </div>
+      <div id="list-collaborateurs" class="collaborateurs-grid"></div>
+    </div>
+  
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-chart-line"></i>
+        Analyses et Profils
+      </h2>
+      <div class="chart-tabs">
+        <button class="tab-btn active" onclick="showChart('statistics')">
+          <i class="fas fa-chart-bar"></i>
+          Statistiques Globales
+        </button>
+        <button class="tab-btn" onclick="showChart('individual')">
+          <i class="fas fa-user-chart"></i>
+          Profil individuel
+        </button>
+      </div>
+      
+      <div id="statistics-chart" class="chart-container active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="total-collaborateurs">0</div>
+            <div class="stat-label">Collaborateurs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="total-competences">0</div>
+            <div class="stat-label">Compétences</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="experts-count">0</div>
+            <div class="stat-label">Experts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="avg-competences">0</div>
+            <div class="stat-label">Compétences/Pers.</div>
+          </div>
+        </div>
+        
+        <canvas id="levelChart" width="400" height="200" style="margin-bottom: 2rem;"></canvas>
+        
+        <div class="suggestions-section">
+          <div class="suggestion-category critical">
+            <div class="suggestion-title">
+              <i class="fas fa-exclamation-triangle"></i>
+              Risques Critiques
+            </div>
+            <div id="critical-risks"></div>
+          </div>
+          
+          <div class="suggestion-category">
+            <div class="suggestion-title">
+              <i class="fas fa-graduation-cap"></i>
+              Formations Suggérées
+            </div>
+            <div id="training-suggestions"></div>
+          </div>
+          
+          <div class="suggestion-category recruitment">
+            <div class="suggestion-title">
+              <i class="fas fa-user-plus"></i>
+              Besoins de Recrutement
+            </div>
+            <div id="recruitment-needs"></div>
+          </div>
+          
+          <div class="suggestion-category opportunity">
+            <div class="suggestion-title">
+              <i class="fas fa-lightbulb"></i>
+              Opportunités
+            </div>
+            <div id="opportunities"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="individual-chart" class="chart-container">
+        <div class="chart-controls">
+          <select id="collaborateur-select" onchange="renderIndividualChart(this.value)">
+            <option value="">Choisir un collaborateur...</option>
+          </select>
+        </div>
+        <div id="individual-profile" class="individual-profile"></div>
+        <canvas id="individualChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+  
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-table"></i>
+        Vue Manager : Matrice des Compétences
+      </h2>
+      <div class="matrix-container">
+        <table>
+          <thead>
+            <tr>
+              <th><i class="fas fa-user"></i> Collaborateur</th>
+              <th><i class="fab fa-python"></i> Python</th>
+              <th><i class="fab fa-java"></i> Java</th>
+              <th><i class="fab fa-jira"></i> Jira</th>
+              <th><i class="fab fa-confluence"></i> Confluence</th>
+              <th><i class="fab fa-js-square"></i> JavaScript</th>
+              <th><i class="fab fa-angular"></i> Angular</th>
+              <th><i class="fab fa-react"></i> React</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+    </div>
+  
+    <div class="section">
+      <h2 class="section-title">
+        <i class="fas fa-user-edit"></i>
+        Mise à jour du profil
+      </h2>
+      <form id="update-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Nom du collaborateur</label>
+            <div class="input-group">
+              <i class="fas fa-user"></i>
+              <input type="text" id="nom-input" name="nom" required placeholder="Tapez pour rechercher ou ajouter..." />
+              <div class="suggestions-dropdown" id="nom-suggestions"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-code"></i> Technologie</label>
+            <div class="input-group">
+              <i class="fas fa-code"></i>
+              <input type="text" id="techno-input" name="technos" required placeholder="Tapez pour rechercher ou ajouter..." />
+              <div class="suggestions-dropdown" id="techno-suggestions"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-layer-group"></i> Niveau</label>
+            <div class="input-group">
+              <i class="fas fa-layer-group"></i>
+              <select name="niveau" required>
+                <option value="">Sélectionner un niveau</option>
+                <option value="Débutant">🔴 Débutant</option>
+                <option value="Intermédiaire">🟡 Intermédiaire</option>
+                <option value="Expert">🟢 Expert</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i>
+          Enregistrer
+        </button>
+      </form>
+    </div>
   </div>
-
-  <h2>📝 Mise à jour du profil</h2>
-  <form id="update-form">
-    <label>Nom : <input type="text" name="nom" /></label><br>
-    <label>Technologie : <input type="text" name="technos" /></label><br>
-    <label>Niveau :
-      <select name="niveau">
-        <option value="Débutant">Débutant</option>
-        <option value="Intermédiaire">Intermédiaire</option>
-        <option value="Expert">Expert</option>
-      </select>
-    </label><br>
-    <button type="submit">Envoyer (simulation)</button>
-  </form>
-
+  
   <script>
-    const collaborateurs = [
-      {
-        nom: "Alice Dupont",
-        technos: [
-          { nom: "Python", niveau: "Expert" },
-          { nom: "Jira", niveau: "Intermédiaire" }
-        ]
-      },
-      {
-        nom: "Mehdi Khelifi",
-        technos: [
-          { nom: "Java", niveau: "Intermédiaire" },
-          { nom: "Confluence", niveau: "Débutant" }
-        ]
-      },
-      {
-        nom: "Sophie Legrand",
-        technos: [
-          { nom: "Python", niveau: "Débutant" },
-          { nom: "JavaScript", niveau: "Intermédiaire" }
-        ]
-      },
-      {
-        nom: "Paul Martin",
-        technos: [
-          { nom: "JavaScript", niveau: "Débutant" },
-          { nom: "Jira", niveau: "Débutant" }
-        ]
+    const collaborateurs = [];
+    const technosList = ["Python", "Java", "Jira", "Confluence", "JavaScript","Angular","React"];
+    
+    let currentChart = null;
+    let levelChart = null;
+    let individualChart = null;
+    
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+  
+    function getLevelIcon(niveau) {
+      switch(niveau) {
+        case 'Expert': return '<i class="fas fa-star level-icon" style="color: var(--success-color)"></i>';
+        case 'Intermédiaire': return '<i class="fas fa-star-half-alt level-icon" style="color: var(--warning-color)"></i>';
+        case 'Débutant': return '<i class="far fa-star level-icon" style="color: var(--danger-color)"></i>';
+        default: return '<i class="fas fa-minus level-icon" style="color: var(--text-secondary)"></i>';
       }
-    ];
-
-    const technosList = ["Python", "Java", "Jira", "Confluence", "JavaScript"];
-    const listDiv = document.getElementById("list-collaborateurs");
-    const matrixBody = document.getElementById("matrix-body");
-
-    function renderList() {
-      const keyword = document.getElementById("search").value.toLowerCase();
-      const technoFilter = document.getElementById("filter-techno").value;
-      const niveauFilter = document.getElementById("filter-niveau").value;
-
-      listDiv.innerHTML = "";
-      matrixBody.innerHTML = "";
-
+    }
+  
+    // Gestion des onglets de graphiques
+    function showChart(chartType) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.chart-container').forEach(container => container.classList.remove('active'));
+      
+      document.querySelector(`[onclick="showChart('${chartType}')"]`).classList.add('active');
+      document.getElementById(`${chartType}-chart`).classList.add('active');
+  
+      if (chartType === 'statistics') {
+        toggleStats();
+      } else if (chartType === 'individual') {
+        updateCollaborateurSelect();
+      }
+    }
+  
+    // Graphique individuel
+    function updateCollaborateurSelect() {
+      const select = document.getElementById('collaborateur-select');
+      select.innerHTML = '<option value="">Choisir un collaborateur...</option>';
+      
       collaborateurs.forEach(collab => {
-        const techList = collab.technos.map(t => `${t.nom} (${t.niveau})`).join(", ");
-        const matchKeyword = collab.nom.toLowerCase().includes(keyword) ||
-          collab.technos.some(t => t.nom.toLowerCase().includes(keyword));
-        const filtered = collab.technos.filter(t =>
-          (!technoFilter || t.nom === technoFilter) &&
-          (!niveauFilter || t.niveau === niveauFilter)
-        );
-
-        if ((keyword === "" || matchKeyword) &&
-            (filtered.length > 0 || (!technoFilter && !niveauFilter))) {
-          const div = document.createElement("div");
-          div.className = "collaborateur";
-          div.innerHTML = `<strong>${collab.nom}</strong><br>Technos : ${techList}`;
-          listDiv.appendChild(div);
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td><strong>${collab.nom}</strong></td>`;
-          technosList.forEach(tech => {
-            const t = collab.technos.find(x => x.nom === tech);
-            let niveau = t ? t.niveau : "-";
-            let symbol = niveau === "Expert" ? "🟢" : niveau === "Intermédiaire" ? "🟡" : niveau === "Débutant" ? "🔴" : "";
-            tr.innerHTML += `<td>${symbol} ${niveau}</td>`;
-          });
-          matrixBody.appendChild(tr);
-        }
+        const option = document.createElement('option');
+        option.value = collab.nom;
+        option.textContent = collab.nom;
+        select.appendChild(option);
       });
     }
-
-    function toggleStats() {
-      const stats = document.getElementById("stats-section");
-      stats.classList.toggle("hidden");
-      if (!stats.classList.contains("hidden")) renderStats();
-    }
-
-    function renderStats() {
-      const total = collaborateurs.length;
-      const techUsage = {};
-      const techLevels = {};
+  
+    function renderIndividualChart(collaborateurNom) {
+      const collab = collaborateurs.find(c => c.nom === collaborateurNom);
+      if (!collab) return;
+  
+      // Profil du collaborateur
+      const profileDiv = document.getElementById('individual-profile');
+      const competencesCount = collab.technos.length;
+      const expertises = collab.technos.filter(t => t.niveau === 'Expert').length;
+      
+      profileDiv.innerHTML = `
+        <div class="profile-header">
+          <div class="profile-avatar">${getInitials(collab.nom)}</div>
+          <div class="profile-info">
+            <h3>${collab.nom}</h3>
+            <p>${competencesCount} compétences • ${expertises} expertises</p>
+          </div>
+        </div>
+        <div class="competences-list">
+          ${collab.technos.map(t => 
+            `<span class="competence-badge ${t.niveau.toLowerCase()}">
+              ${getLevelIcon(t.niveau)} ${t.nom}
+            </span>`
+          ).join('')}
+        </div>
+      `;
+      
+      // Graphique radar des compétences
+      const ctx = document.getElementById('individualChart').getContext('2d');
+      
+      if (individualChart) {
+        individualChart.destroy();
+      }
+  
       const levelScores = { "Débutant": 1, "Intermédiaire": 2, "Expert": 3 };
-
-      collaborateurs.forEach(collab => {
-        collab.technos.forEach(t => {
-          if (!techUsage[t.nom]) techUsage[t.nom] = [];
-          techUsage[t.nom].push({ nom: collab.nom, niveau: t.niveau });
-
-          if (!techLevels[t.nom]) techLevels[t.nom] = { Débutant: 0, Intermédiaire: 0, Expert: 0 };
-          techLevels[t.nom][t.niveau]++;
-        });
+      const allTechs = [...new Set([...technosList, ...collab.technos.map(t => t.nom)])];
+      
+      const scores = allTechs.map(tech => {
+        const competence = collab.technos.find(t => t.nom === tech);
+        return competence ? levelScores[competence.niveau] : 0;
       });
 
-      const summaryEl = document.getElementById("summary");
-      let summaryText = `👥 Collaborateurs : ${total}\n`;
-
-      const topTechs = Object.entries(techUsage)
-        .sort((a, b) => b[1].length - a[1].length)
-        .slice(0, 3)
-        .map(([tech, users]) => `${tech} (${users.length})`)
-        .join(", ");
-      summaryText += `🔥 Top 3 technos : ${topTechs}\n\n`;
-
-      const risques = Object.entries(techLevels)
-        .filter(([tech, lvls]) => lvls.Expert === 1)
-        .map(([tech]) => `⚠️ ${tech}`);
-      if (risques.length) summaryText += `🚨 Technos critiques (1 seul expert) : ${risques.join(", ")}\n`;
-
-      const besoinsFormation = Object.entries(techLevels)
-        .filter(([_, lvls]) => (lvls.Débutant >= 2 && lvls.Expert === 0))
-        .map(([tech]) => {
-          const users = techUsage[tech]
-            .filter(u => u.niveau === "Débutant")
-            .map(u => `${u.nom} (${tech})`)
-            .join(", ");
-          return `📘 ${tech} → ${users}`;
-        });
-      if (besoinsFormation.length) summaryText += `📚 Formations suggérées :\n${besoinsFormation.join("\n")}\n`;
-
-      const manques = Object.entries(techLevels)
-        .filter(([tech, lvls]) => lvls.Expert === 0 && (lvls.Débutant + lvls.Intermédiaire) >= 2)
-        .map(([tech, lvls]) => `➕ ${tech} (Débutants: ${lvls.Débutant}, Intermédiaires: ${lvls.Intermédiaire}, Experts: ${lvls.Expert})`);
-      if (manques.length) summaryText += `🧑‍💼 Besoins de recrutement :\n${manques.join("\n")}\n`;
-
-      summaryEl.innerText = summaryText;
-
-      const techAverageLevels = {};
-      Object.entries(techUsage).forEach(([tech, users]) => {
-        const scores = users.map(u => levelScores[u.niveau]);
-        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        techAverageLevels[tech] = avg.toFixed(2);
-      });
-
-      const ctx = document.getElementById('levelChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
+      individualChart = new Chart(ctx, {
+        type: 'radar',
         data: {
-          labels: Object.keys(techAverageLevels),
+          labels: allTechs,
           datasets: [{
-            label: 'Niveau moyen (1=Débutant, 3=Expert)',
-            data: Object.values(techAverageLevels),
-            backgroundColor: '#3498db'
+            label: collab.nom,
+            data: scores,
+            borderColor: 'rgba(37, 99, 235, 1)',
+            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+            pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(37, 99, 235, 1)'
           }]
         },
         options: {
           responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: `Profil de compétences - ${collab.nom}`
+            }
+          },
           scales: {
-            y: {
+            r: {
               beginAtZero: true,
               max: 3,
               ticks: {
+                stepSize: 1,
                 callback: function(value) {
-                  return value === 1 ? "Débutant" : value === 2 ? "Intermédiaire" : value === 3 ? "Expert" : value;
+                  return value === 1 ? "Débutant" : value === 2 ? "Intermédiaire" : value === 3 ? "Expert" : "";
                 }
               }
             }
@@ -237,15 +997,465 @@
       });
     }
 
+    // Auto-complétion pour les noms et technologies
+    function setupAutoComplete() {
+      const nomInput = document.getElementById('nom-input');
+      const technoInput = document.getElementById('techno-input');
+      const nomSuggestions = document.getElementById('nom-suggestions');
+      const technoSuggestions = document.getElementById('techno-suggestions');
+
+      // Nom auto-complete
+      nomInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        const suggestions = collaborateurs
+          .map(c => c.nom)
+          .filter(nom => nom.toLowerCase().includes(value))
+          .slice(0, 5);
+
+        nomSuggestions.innerHTML = suggestions
+          .map(nom => `<div class="suggestion-item" onclick="selectSuggestion('nom', '${nom}')">${nom}</div>`)
+          .join('');
+          
+        if (value && !suggestions.some(s => s.toLowerCase() === value)) {
+          nomSuggestions.innerHTML += `<div class="suggestion-item suggestion-new" onclick="selectSuggestion('nom', '${this.value}')">
+            <i class="fas fa-plus"></i> Ajouter "${this.value}" comme nouveau collaborateur
+          </div>`;
+        }
+        nomSuggestions.classList.toggle('show', suggestions.length > 0 || value.length > 0);
+      });
+
+      // Techno auto-complete with levels for existing collaborators
+      technoInput.addEventListener('input', function() {
+        const nom = nomInput.value.trim();
+        const value = this.value.toLowerCase();
+        const collab = collaborateurs.find(c => c.nom === nom);
+        
+        // Get all unique technologies
+        const allTechs = [...new Set([
+          ...technosList,
+          ...collaborateurs.flatMap(c => c.technos.map(t => t.nom))
+        ])];
+        
+        // Filter matching technologies
+        const suggestions = allTechs
+          .filter(tech => tech.toLowerCase().includes(value))
+          .slice(0, 5);
+
+        technoSuggestions.innerHTML = suggestions.map(tech => {
+          // Check if this is an existing skill for the selected collaborator
+          const existingSkill = collab?.technos.find(t => t.nom === tech);
+          
+          return existingSkill
+            ? `<div class="suggestion-item existing-skill" onclick="selectExistingSkill('${tech}', '${existingSkill.niveau}')">
+                ${tech} 
+                <span class="skill-level-badge ${existingSkill.niveau.toLowerCase()}">
+                  ${getLevelIcon(existingSkill.niveau)} ${existingSkill.niveau}
+                </span>
+              </div>`
+            : `<div class="suggestion-item" onclick="selectSuggestion('techno', '${tech}')">
+                ${tech} <span class="suggestion-new">(nouvelle)</span>
+              </div>`;
+        }).join('');
+        
+        technoSuggestions.classList.toggle('show', suggestions.length > 0);
+      });
+
+      // Close suggestions when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.input-group')) {
+          nomSuggestions.classList.remove('show');
+          technoSuggestions.classList.remove('show');
+        }
+      });
+    }
+
+    function selectSuggestion(type, value) {
+      if (type === 'nom') {
+        document.getElementById('nom-input').value = value;
+        document.getElementById('nom-suggestions').classList.remove('show');
+        // Clear techno input when changing collaborator
+        document.getElementById('techno-input').value = '';
+      } else if (type === 'techno') {
+        document.getElementById('techno-input').value = value;
+        document.getElementById('techno-suggestions').classList.remove('show');
+      }
+    }
+
+    function selectExistingSkill(tech, niveau) {
+      document.getElementById('techno-input').value = tech;
+      document.querySelector('#update-form select[name="niveau"]').value = niveau;
+      document.getElementById('techno-suggestions').classList.remove('show');
+    }
+
+    function chargerCSV() {
+      document.getElementById('loading').style.display = 'flex';
+      
+      fetch("http://localhost:3001/csv")
+        .then(response => {
+          if (!response.ok) throw new Error("Erreur de chargement");
+          return response.text();
+        })
+        .then(csvText => {
+          const lignes = csvText.trim().split("\n");
+          const collaborateursMap = {};
+
+          for (let i = 1; i < lignes.length; i++) {
+            const ligne = lignes[i].split(",");
+            const nom = ligne[0].trim();
+            const techno = ligne[1].trim();
+            const niveau = ligne[2].trim();
+
+            if (!collaborateursMap[nom]) {
+              collaborateursMap[nom] = { nom, technos: [] };
+            }
+            collaborateursMap[nom].technos.push({ nom: techno, niveau });
+          }
+
+          collaborateurs.length = 0;
+          collaborateurs.push(...Object.values(collaborateursMap));
+          
+          document.getElementById('loading').style.display = 'none';
+          renderList();
+
+           // Add this after renderList() call in chargerCSV()
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                if (confirm(`Supprimer définitivement ${btn.dataset.nom} ?`)) {
+                  fetch("http://localhost:3001/csv-online", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nom: btn.dataset.nom })
+                  })
+                  .then(res => res.json())
+                  .then(json => {
+                    alert("✅ " + json.message);
+                    chargerCSV();
+                  })
+                  .catch(err => {
+                    alert("❌ Erreur lors de la suppression");
+                  });
+                }
+              });
+            });
+
+          renderStats();
+          setupAutoComplete();
+        })
+        .catch(err => {
+          console.error("Erreur :", err);
+          document.getElementById('loading').innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="color: var(--danger-color)"></i>
+            Erreur lors du chargement des données
+          `;
+        });
+    }
+
+    function renderList() {
+      const keyword = document.getElementById("search").value.toLowerCase();
+      const technoFilter = document.getElementById("filter-techno").value;
+      const niveauFilter = document.getElementById("filter-niveau").value;
+      const listDiv = document.getElementById("list-collaborateurs");
+      const matrixBody = document.getElementById("matrix-body");
+
+      listDiv.innerHTML = "";
+      matrixBody.innerHTML = "";
+
+      const filteredCollaborateurs = collaborateurs.filter(collab => {
+        const matchKeyword = collab.nom.toLowerCase().includes(keyword) ||
+          collab.technos.some(t => t.nom.toLowerCase().includes(keyword));
+        const filtered = collab.technos.filter(t =>
+          (!technoFilter || t.nom === technoFilter) &&
+          (!niveauFilter || t.niveau === niveauFilter)
+        );
+
+        return (keyword === "" || matchKeyword) &&
+               (filtered.length > 0 || (!technoFilter && !niveauFilter));
+      });
+
+      filteredCollaborateurs.forEach(collab => {
+        // Card view
+        const card = document.createElement("div");
+        card.className = "collaborateur-card";
+        
+        const competencesBadges = collab.technos.map(t => 
+          `<span class="competence-badge ${t.niveau.toLowerCase()}">
+            ${getLevelIcon(t.niveau)}
+            ${t.nom}
+          </span>`
+        ).join('');
+
+        card.innerHTML = `
+          <div class="collaborateur-header">
+            <div class="collaborateur-avatar">${getInitials(collab.nom)}</div>
+            <div class="collaborateur-name">${collab.nom}</div>
+            <button class="btn-icon delete-btn" data-nom="${collab.nom}" title="Supprimer">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+          <div class="competences-list">
+            ${competencesBadges}
+          </div>
+        `;
+        listDiv.appendChild(card);
+
+        // Matrix view
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><strong><i class="fas fa-user" style="margin-right: 0.5rem; color: var(--primary-color)"></i>${collab.nom}</strong></td>`;
+        
+        technosList.forEach(tech => {
+          const t = collab.technos.find(x => x.nom === tech);
+          const niveau = t ? t.niveau : "-";
+          const cellClass = t ? `matrix-cell ${niveau.toLowerCase()}` : 'matrix-cell';
+          
+          tr.innerHTML += `<td><div class="${cellClass}">${getLevelIcon(niveau)} ${niveau}</div></td>`;
+        });
+        matrixBody.appendChild(tr);
+      });
+
+      // Update stats
+      updateQuickStats();
+    }
+
+    function updateQuickStats() {
+      document.getElementById('total-collaborateurs').textContent = collaborateurs.length;
+      
+      const allCompetences = new Set();
+      let expertsCount = 0;
+      
+      collaborateurs.forEach(collab => {
+        collab.technos.forEach(t => {
+          allCompetences.add(t.nom);
+          if (t.niveau === 'Expert') expertsCount++;
+        });
+      });
+      
+      document.getElementById('total-competences').textContent = allCompetences.size;
+      document.getElementById('experts-count').textContent = expertsCount;
+    }
+
+    function toggleStats() {
+      const stats = document.getElementById("statistics-chart");
+      stats.classList.toggle("hidden");
+      if (!stats.classList.contains("hidden")) renderStats();
+    }
+
+    function renderStats() {
+  const total = collaborateurs.length;
+  const techUsage = {};
+  const techLevels = {};
+  const levelScores = { "Débutant": 1, "Intermédiaire": 2, "Expert": 3 };
+
+  // Calculate statistics
+  collaborateurs.forEach(collab => {
+    collab.technos.forEach(t => {
+      if (!techUsage[t.nom]) techUsage[t.nom] = [];
+      techUsage[t.nom].push({ nom: collab.nom, niveau: t.niveau });
+
+      if (!techLevels[t.nom]) techLevels[t.nom] = { Débutant: 0, Intermédiaire: 0, Expert: 0 };
+      techLevels[t.nom][t.niveau]++;
+    });
+  });
+
+  // Update quick stats
+  document.getElementById('total-collaborateurs').textContent = collaborateurs.length;
+  
+  const allCompetences = new Set();
+  let expertsCount = 0;
+  let totalCompetences = 0;
+  
+  collaborateurs.forEach(collab => {
+    collab.technos.forEach(t => {
+      allCompetences.add(t.nom);
+      if (t.niveau === 'Expert') expertsCount++;
+      totalCompetences++;
+    });
+  });
+  
+  document.getElementById('total-competences').textContent = allCompetences.size;
+  document.getElementById('experts-count').textContent = expertsCount;
+  document.getElementById('avg-competences').textContent = (totalCompetences / collaborateurs.length).toFixed(1);
+
+  // Generate suggestions
+  const criticalRisks = Object.entries(techLevels)
+    .filter(([tech, lvls]) => lvls.Expert === 1)
+    .map(([tech]) => ({
+      tech,
+      priority: "high",
+      message: `Seul expert: ${techUsage[tech].find(u => u.niveau === "Expert").nom}`
+    }));
+
+  // Updated training suggestions to include employee names
+  const trainingSuggestions = Object.entries(techLevels)
+    .filter(([_, lvls]) => (lvls.Débutant >= 2 && lvls.Expert === 0))
+    .map(([tech]) => {
+      const beginners = techUsage[tech]
+        .filter(u => u.niveau === "Débutant")
+        .map(u => u.nom)
+        .join(", ");
+      return {
+        tech,
+        priority: "medium",
+        message: `${tech}: ${beginners}`
+      };
+    });
+
+  const recruitmentNeeds = Object.entries(techLevels)
+    .filter(([tech, lvls]) =>
+      (lvls.Expert === 0 && (lvls.Débutant + lvls.Intermédiaire) >= 2) ||
+      (lvls.Expert === 1 && (lvls.Débutant + lvls.Intermédiaire) === 0)
+    )
+    .map(([tech, lvls]) => ({
+      tech,
+      priority: lvls.Expert === 0 ? "high" : "medium",
+      message: lvls.Expert === 0 
+        ? `${tech}: Aucun expert (${lvls.Intermédiaire} intermédiaires, ${lvls.Débutant} débutants)`
+        : `${tech}: 1 expert sans relève`
+    }));
+
+  const opportunities = Object.entries(techLevels)
+    .filter(([tech, lvls]) => lvls.Intermédiaire >= 2 && lvls.Expert === 0)
+    .map(([tech]) => ({
+      tech,
+      priority: "low",
+      message: `${tech}: ${techUsage[tech].filter(u => u.niveau === "Intermédiaire").length} intermédiaires pouvant progresser`
+    }));
+
+  // Render suggestions
+  renderSuggestions(criticalRisks, "critical-risks");
+  renderSuggestions(trainingSuggestions, "training-suggestions");
+  renderSuggestions(recruitmentNeeds, "recruitment-needs");
+  renderSuggestions(opportunities, "opportunities");
+
+  // Render chart
+  renderTechLevelsChart(techLevels);
+}
+
+function renderSuggestions(items, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map(item => `
+    <div class="suggestion-item">
+      <div class="suggestion-tech">${item.tech}</div>
+      <div class="suggestion-details">${item.message}</div>
+      <span class="priority-badge priority-${item.priority}">
+        ${item.priority === "high" ? "Haute" : item.priority === "medium" ? "Moyenne" : "Basse"}
+      </span>
+    </div>
+  `).join('');
+}
+  function renderTechLevelsChart(techLevels) {
+    const ctx = document.getElementById('levelChart').getContext('2d');
+    
+    // Destroy previous chart if it exists
+    if (levelChart) {
+      levelChart.destroy();
+    }
+
+    const techs = Object.keys(techLevels);
+    const datasets = [
+      {
+        label: 'Débutant',
+        data: techs.map(tech => techLevels[tech].Débutant),
+        backgroundColor: 'rgba(239, 68, 68, 0.7)'
+      },
+      {
+        label: 'Intermédiaire',
+        data: techs.map(tech => techLevels[tech].Intermédiaire),
+        backgroundColor: 'rgba(245, 158, 11, 0.7)'
+      },
+      {
+        label: 'Expert',
+        data: techs.map(tech => techLevels[tech].Expert),
+        backgroundColor: 'rgba(16, 185, 129, 0.7)'
+      }
+    ];
+
+    levelChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: techs,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Répartition des niveaux par compétence'
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
     document.getElementById("search").addEventListener("input", renderList);
     document.getElementById("filter-techno").addEventListener("change", renderList);
     document.getElementById("filter-niveau").addEventListener("change", renderList);
-    document.getElementById("update-form").addEventListener("submit", e => {
-      e.preventDefault();
-      alert("Mise à jour soumise (simulation)");
-    });
 
-    renderList();
+    document.getElementById("update-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+
+      const data = {
+        nom: form.nom.value.trim(),
+        technos: form.technos.value.trim(),
+        niveau: form.niveau.value.trim()
+      };
+
+      // Check if collaborator exists
+      const collabExists = collaborateurs.some(c => c.nom === data.nom);
+      // Check if skill exists for this collaborator
+      const collab = collaborateurs.find(c => c.nom === data.nom);
+      const skillExists = collab?.technos.some(t => t.nom === data.technos);
+
+      submitBtn.innerHTML = `<div class="spinner"></div> ${
+        skillExists ? "Mise à jour..." : 
+        collabExists ? "Ajout de compétence..." : "Ajout de collaborateur..."
+      }`;
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch(
+          "http://localhost:3001/csv-online",
+          {
+            method: skillExists ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          }
+        );
+
+        if (!response.ok) throw new Error(await response.text());
+        
+        const result = await response.json();
+        alert(`✅ ${
+          skillExists ? "Niveau mis à jour" :
+          collabExists ? "Nouvelle compétence ajoutée" : "Nouveau collaborateur créé"
+        } !`);
+        form.reset();
+        chargerCSV();
+      } catch (err) {
+        alert(`❌ Erreur : ${err.message}`);
+        console.error(err);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+  });
+
+    window.onload = chargerCSV;
   </script>
 </body>
 </html>
