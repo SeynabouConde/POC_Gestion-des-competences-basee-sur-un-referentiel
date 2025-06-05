@@ -730,6 +730,10 @@
           <i class="fas fa-user-chart"></i>
           Profil individuel
         </button>
+        <button class="tab-btn" onclick="showChart('referentiel')">
+          <i class="fas fa-book"></i>
+          Référentiel
+        </button>
       </div>
       
       <div id="statistics-chart" class="chart-container active">
@@ -798,6 +802,74 @@
         <div id="individual-profile" class="individual-profile"></div>
         <canvas id="individualChart" width="400" height="200"></canvas>
       </div>
+
+      <div id="referentiel-chart" class="chart-container">
+        <div style="overflow-x:auto; margin-top:1rem;">
+          <table style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid #e2e8f0; padding:0.75rem; background:#2563eb; color:white;">Compétence</th>
+                <th style="border:1px solid #e2e8f0; padding:0.75rem; background:#2563eb; color:white;">Débutant</th>
+                <th style="border:1px solid #e2e8f0; padding:0.75rem; background:#2563eb; color:white;">Intermédiaire</th>
+                <th style="border:1px solid #e2e8f0; padding:0.75rem; background:#2563eb; color:white;">Expert</th>
+                <th style="border:1px solid #e2e8f0; padding:0.75rem; background:#2563eb; color:white;">Niveau attendu</th>
+              </tr>
+            </thead>
+            <tbody id="referentiel-body">
+              <tr>
+                <td>Python</td>
+                <td>Écrire des scripts simples, comprendre les bases (variables, boucles)</td>
+                <td>Utiliser des bibliothèques comme Pandas ou Flask, structurer des projets</td>
+                <td>Optimiser le code, créer des packages, maîtriser les tests & déploiement</td>
+                <td>Intermédiaire</td>
+              </tr>
+              <tr>
+                <td>Java</td>
+                <td>Comprendre la syntaxe Java, créer des classes simples</td>
+                <td>Utiliser des frameworks comme Spring, gérer des projets Maven</td>
+                <td>Concevoir des architectures complexes, optimiser la performance</td>
+                <td>Expert</td>
+              </tr>
+              <tr>
+                <td>Jira</td>
+                <td>Suivre les tâches, changer leur statut dans un projet</td>
+                <td>Configurer les workflows, gérer des boards Scrum/Kanban</td>
+                <td>Administrer Jira, automatiser les règles, générer des rapports avancés</td>
+                <td>Débutant</td>
+              </tr>
+              <tr>
+                <td>Confluence</td>
+                <td>Lire et écrire des pages simples, utiliser des modèles</td>
+                <td>Organiser l’espace, intégrer des macros, structurer la documentation</td>
+                <td>Gérer les permissions, créer des espaces d’équipe complets</td>
+                <td>Débutant</td>
+              </tr>
+              <tr>
+                <td>JavaScript</td>
+                <td>Écrire des scripts simples côté client (DOM, events)</td>
+                <td>Utiliser ES6+, gérer les promesses, manipuler des APIs REST</td>
+                <td>Écrire du code modulaire, gérer l’asynchrone, debugger efficacement</td>
+                <td>Intermédiaire</td>
+              </tr>
+              <tr>
+                <td>Angular</td>
+                <td>Créer des composants simples, utiliser le CLI</td>
+                <td>Utiliser les services, formulaires, routing, gestion d’état</td>
+                <td>Créer une architecture scalable, modules avancés, tests unitaires</td>
+                <td>Expert</td>
+              </tr>
+              <tr>
+                <td>React</td>
+                <td>Créer des composants fonctionnels, utiliser `useState`</td>
+                <td>Utiliser `useEffect`, props, gestion des états avec context/redux</td>
+                <td>Optimiser les performances, architecture avancée, tests React</td>
+                <td>Intermédiaire</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>      
+
     </div>
   
     <div class="section">
